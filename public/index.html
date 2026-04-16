@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick Fridge Fix</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <header class="header">
+      <h1>🍳 Quick Fridge Fix</h1>
+      <p>What's in your fridge? We'll find dinner.</p>
+    </header>
+
+    <section class="input-section">
+      <label for="ingredients" class="visually-hidden">Ingredients List</label>
+      <textarea id="ingredients" placeholder="e.g. chicken, garlic, pasta, olive oil..."></textarea>
+
+      <div class="servings-control">
+        <span class="servings-label">Servings:</span>
+        <div class="stepper">
+          <button type="button" id="decrease-btn" aria-label="Decrease servings">-</button>
+          <input type="number" id="servings" value="2" min="1" max="20" readonly>
+          <button type="button" id="increase-btn" aria-label="Increase servings">+</button>
+        </div>
+      </div>
+
+      <button id="find-btn">Find Recipes</button>
+    </section>
+
+    <div id="error-msg" class="error-message hidden"></div>
+
+    <div id="skeleton" class="loader-container hidden">
+      <article class="card skeleton-card"><h3 class="skeleton-text skeleton-title"></h3><p class="skeleton-text skeleton-subtitle"></p></article>
+      <article class="card skeleton-card"><h3 class="skeleton-text skeleton-title"></h3><p class="skeleton-text skeleton-subtitle"></p></article>
+      <article class="card skeleton-card"><h3 class="skeleton-text skeleton-title"></h3><p class="skeleton-text skeleton-subtitle"></p></article>
+    </div>
+
+    <section id="results" class="hidden">
+      <!-- Recipes will be injected here -->
+    </section>
+  </main>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
