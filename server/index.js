@@ -18,11 +18,10 @@ app.use(express.json());
 app.use(express.static('public'));
 
 const openai = new OpenAI({
-  baseURL: process.env.LM_STUDIO_URL || 'http://localhost:1234/v1',
-  apiKey: 'lm-studio',
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
-const MODEL = process.env.LM_STUDIO_MODEL || 'meta/llama-3.3-70b';
+const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
 app.post('/api/recipes', async (req, res) => {
   const { ingredients, servings } = req.body;
