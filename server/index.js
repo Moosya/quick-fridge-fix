@@ -7,9 +7,8 @@ const { buildPrompt } = require('./prompt');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Rate limiting: 10 requests per minute per IP
 const limiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
+  windowMs: 60 * 1000,
   max: 10,
   message: { error: 'Too many requests, please try again later.' },
 });
@@ -19,16 +18,15 @@ app.use(express.json());
 app.use(express.static('public'));
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: process.env.LM_STUDIO_URL || 'http://localhost:1234/v1',
+  apiKey: 'lm-studio',
 });
 
-const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+const MODEL = process.env.LM_STUDIO_MODEL || 'meta/llama-3.3-70b';
 
-// POST /api/recipes endpoint
 app.post('/api/recipes', async (req, res) => {
   const { ingredients, servings } = req.body;
 
-  // Input validation
   if (!ingredients || typeof ingredients !== 'string') {
     return res.status(400).json({ error: 'Ingredients string is required.' });
   }
@@ -41,7 +39,7 @@ app.post('/api/recipes', async (req, res) => {
     return res.status(400).json({ error: 'Servings must be a number.' });
   }
 
-  const servingsNum = Math.floor(servings); // ensure integer
+  const servingsNum = Math.floor(servings);
   if (servingsNum < 1 || servingsNum > 20) {
     return res.status(400).json({ error: 'Servings must be between 1 and 20.' });
   }
@@ -69,7 +67,7 @@ app.post('/api/recipes', async (req, res) => {
     res.json(recipeData);
 
   } catch (error) {
-    console.error('OpenAI Error:', error.message);
+    console.error('LM Studio Error:', error.message);
     const isRateLimit = error.status === 429
       || error.code === 'rate_limit_exceeded'
       || (error.message && error.message.toLowerCase().includes('rate limit'));
