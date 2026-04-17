@@ -1,4 +1,14 @@
-function buildPrompt(ingredients, servings) {
+const STYLE_MAP = {
+  spicier: 'spicier and bolder',
+  healthier: 'lighter and healthier',
+  heartier: 'more filling and hearty',
+  different: 'from a completely different cuisine than the obvious choice',
+};
+
+function buildPrompt(ingredients, servings, options = {}) {
+  const styleText = options.style ? ` Style preference: make the recipes ${STYLE_MAP[options.style]}.` : '';
+  const avoidText = options.avoid ? ` Do not use these ingredients: ${options.avoid}.` : '';
+  
   return [
     {
       role: 'system',
@@ -6,9 +16,9 @@ function buildPrompt(ingredients, servings) {
     },
     {
       role: 'user',
-      content: `Ingredients available: "${ingredients}". Number of servings needed: ${servings}. Create 3 dinner recipes.`
+      content: `Ingredients available: "${ingredients}". Number of servings needed: ${servings}. Create 3 dinner recipes.${styleText}${avoidText}`
     }
   ];
 }
 
-module.exports = { buildPrompt };
+module.exports = { buildPrompt, STYLE_MAP };

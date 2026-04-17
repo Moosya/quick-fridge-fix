@@ -31,4 +31,22 @@ describe('buildPrompt', () => {
     expect(sysMsg.content).toContain('ingredients_used');
     expect(sysMsg.content).toContain('3 recipes');
   });
+
+  test('buildPrompt includes style directive when style is set', () => {
+    const messages = buildPrompt('chicken, rice', 2, { style: 'spicier', avoid: null });
+    const userMsg = messages.find(m => m.role === 'user').content;
+    expect(userMsg).toMatch(/spicier and bolder/i);
+  });
+
+  test('buildPrompt includes avoid directive when avoid is set', () => {
+    const messages = buildPrompt('chicken, rice', 2, { style: null, avoid: 'cilantro, nuts' });
+    const userMsg = messages.find(m => m.role === 'user').content;
+    expect(userMsg).toMatch(/cilantro, nuts/i);
+  });
+
+  test('buildPrompt works without options argument', () => {
+    expect(() => buildPrompt('eggs, cheese', 2)).not.toThrow();
+    const messages = buildPrompt('eggs, cheese', 2);
+    expect(messages).toHaveLength(2);
+  });
 });

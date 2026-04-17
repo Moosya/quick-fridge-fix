@@ -24,8 +24,15 @@ const openai = new OpenAI({
 
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
+const STYLE_MAP = {
+  spicier: 'spicier and bolder',
+  healthier: 'lighter and healthier',
+  heartier: 'more filling and hearty',
+  different: 'from a completely different cuisine than the obvious choice',
+};
+
 app.post('/api/recipes', async (req, res) => {
-  const { ingredients, servings } = req.body;
+  const { ingredients, servings, style, avoid } = req.body;
 
   if (!ingredients || typeof ingredients !== 'string') {
     return res.status(400).json({ error: 'Ingredients string is required.' });
@@ -44,8 +51,19 @@ app.post('/api/recipes', async (req, res) => {
     return res.status(400).json({ error: 'Servings must be between 1 and 20.' });
   }
 
+  // Validate style parameter
+  const validStyles = Object.keys(STYLE_MAP);
+  if (style !== undefined && style !== null && !validStyles.includes(style)) {
+    return res.status(400).json({ error: `Invalid style. Must be one of: ${validStyles.join(', ')}` });
+  }
+
+  // Validate avoid parameter length
+  if (avoid !== undefined && typeof avoid === 'string' && avoid.length > 200) {
+    return res.status(400).json({ error: 'Avoid ingredients cannot exceed 200 characters.' });
+  }
+
   try {
-    const messages = buildPrompt(ingredients, servingsNum);
+    const messages = buildPrompt(ingredients, servingsNum, { style, avoid });
 
     const completion = await openai.chat.completions.create({
       model: MODEL,

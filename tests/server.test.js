@@ -95,4 +95,25 @@ describe('POST /api/recipes', () => {
 
     expect(res.status).toBe(400);
   });
+
+  test('POST /api/recipes accepts valid style param', async () => {
+    const res = await request(app)
+      .post('/api/recipes')
+      .send({ ingredients: 'pasta, tomato', servings: 2, style: 'healthier' });
+    expect([200, 500]).toContain(res.status);
+  });
+
+  test('POST /api/recipes rejects invalid style value', async () => {
+    const res = await request(app)
+      .post('/api/recipes')
+      .send({ ingredients: 'pasta, tomato', servings: 2, style: 'random-invalid' });
+    expect(res.status).toBe(400);
+  });
+
+  test('POST /api/recipes rejects avoid over 200 chars', async () => {
+    const res = await request(app)
+      .post('/api/recipes')
+      .send({ ingredients: 'pasta', servings: 2, avoid: 'x'.repeat(201) });
+    expect(res.status).toBe(400);
+  });
 });
