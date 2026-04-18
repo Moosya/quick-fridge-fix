@@ -14,7 +14,7 @@ const CUISINE_MAP = {
 };
 
 function buildPrompt(ingredients, servings, options = {}) {
-  const { styles = [], cuisine, avoid } = options;
+  const { styles = [], cuisine, avoid, householdProfiles } = options;
 
   const styleText = styles.length > 0
     ? ` Style preferences: make the recipes ${styles.map(s => STYLE_MAP[s]).filter(Boolean).join(' and ')}.`
@@ -26,6 +26,20 @@ function buildPrompt(ingredients, servings, options = {}) {
 
   const avoidText = avoid ? ` Do not use these ingredients: ${avoid}.` : '';
 
+  let householdText = '';
+  if (householdProfiles && householdProfiles.length > 0) {
+    const profileList = householdProfiles.map(p => {
+      const flags = (p.dietary_flags || []);
+      const flagStr = flags.length > 0 ? flags.join(', ') : 'no restrictions';
+      return `${p.name} (${flagStr})`;
+    }).join(', ');
+    householdText = ` This meal is for: ${profileList}. All recipes must work for everyone listed.`;
+    const hasPickyEater = householdProfiles.some(p => (p.dietary_flags || []).includes('picky-eater'));
+    if (hasPickyEater) {
+      householdText += ' For picky eaters, suggest ways to hide or swap the problematic ingredient.';
+    }
+  }
+
   return [
     {
       role: 'system',
@@ -33,7 +47,7 @@ function buildPrompt(ingredients, servings, options = {}) {
     },
     {
       role: 'user',
-      content: `Ingredients available: "${ingredients}". Number of servings needed: ${servings}. Create 3 dinner recipes.${styleText}${cuisineText}${avoidText}`
+      content: `Ingredients available: "${ingredients}". Number of servings needed: ${servings}. Create 3 dinner recipes.${styleText}${cuisineText}${avoidText}${householdText}`
     }
   ];
 }

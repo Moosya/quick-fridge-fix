@@ -30,6 +30,24 @@
       </div>
 
       <button id="find-btn">Find Recipes</button>
+
+      <!-- QFF-006: Household / Who's eating -->
+      <div id="household-section" class="hidden">
+        <span class="section-title">Who's eating?</span>
+        <div id="profile-chips"></div>
+        <button id="add-person-btn" class="add-person-btn">+ Add person</button>
+        <div id="add-person-form" class="hidden">
+          <input type="text" id="person-name" placeholder="Name (e.g. Mia, Dad)" maxlength="50">
+          <div id="flag-checkboxes"></div>
+          <div class="add-person-actions">
+            <button id="save-person-btn">Add</button>
+            <button id="cancel-person-btn" type="button">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div id="household-nudge" class="hidden">
+        <p class="household-nudge-text"><a href="#" id="signin-nudge-link">Sign in</a> to save your family's preferences</p>
+      </div>
     </section>
 
     <div id="error-msg" class="error-message hidden"></div>

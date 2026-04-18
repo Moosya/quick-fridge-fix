@@ -6,7 +6,10 @@ const session = require('express-session');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const { buildPrompt } = require('./prompt');
 const authRouter = require('./auth');
+const householdRouter = require('./household');
 const { saveRecipe, getSavedRecipes } = require('./db');
+
+const VALID_HOUSEHOLD_FLAGS = ['vegetarian','vegan','gluten-free','dairy-free','nut-free','halal','kosher','pescatarian','low-carb','picky-eater'];
 
 const app = express();
 app.set('trust proxy', 1);
@@ -31,6 +34,7 @@ app.use(session({
 }));
 app.use(express.json());
 app.use(authRouter);
+app.use(householdRouter);
 
 app.post('/api/recipes/save', (req, res) => {
   if (!req.session.userId) return res.status(401).json({ error: 'Authentication required' });
@@ -71,7 +75,28 @@ const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 const { STYLE_MAP, CUISINE_MAP } = require('./prompt');
 
 app.post('/api/recipes', async (req, res) => {
-  const { ingredients, servings, styles, cuisine, avoid } = req.body;
+  const { ingredients, servings, styles, cuisine, avoid, householdProfiles } = req.body;
+
+  // Validate householdProfiles if provided
+  if (householdProfiles !== undefined) {
+    if (!Array.isArray(householdProfiles)) {
+      return res.status(400).json({ error: 'householdProfiles must be an array.' });
+    }
+    for (const p of householdProfiles) {
+      if (!p.name || typeof p.name !== 'string') {
+        return res.status(400).json({ error: 'Each household profile must have a name.' });
+      }
+      if (p.dietary_flags !== undefined) {
+        if (!Array.isArray(p.dietary_flags)) {
+          return res.status(400).json({ error: 'dietary_flags must be an array.' });
+        }
+        const invalid = p.dietary_flags.filter(f => !VALID_HOUSEHOLD_FLAGS.includes(f));
+        if (invalid.length > 0) {
+          return res.status(400).json({ error: `Invalid household dietary flags: ${invalid.join(', ')}` });
+        }
+      }
+    }
+  }
 
   if (!ingredients || typeof ingredients !== 'string') {
     return res.status(400).json({ error: 'Ingredients string is required.' });
@@ -114,7 +139,7 @@ app.post('/api/recipes', async (req, res) => {
   }
 
   try {
-    const messages = buildPrompt(ingredients, servingsNum, { styles: styles || [], cuisine, avoid });
+    const messages = buildPrompt(ingredients, servingsNum, { styles: styles || [], cuisine, avoid, householdProfiles: householdProfiles || [] });
 
     const completion = await openai.chat.completions.create({
       model: MODEL,

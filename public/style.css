@@ -318,6 +318,147 @@ ol.steps-list li { margin-bottom: 8px; line-height: 1.55; }
   cursor: not-allowed;
 }
 
+/* QFF-006: Household / Who's eating */
+#household-section {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #e8e0d8;
+}
+
+#profile-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 10px;
+}
+
+.profile-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #f0ebe3;
+  border: 1.5px solid #d9d0c5;
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: opacity 0.2s, background 0.15s;
+  user-select: none;
+}
+.profile-chip:hover { background: #e8e0d5; }
+.profile-chip.inactive { opacity: 0.4; }
+.profile-chip .chip-remove {
+  cursor: pointer;
+  color: #999;
+  margin-left: 2px;
+  font-size: 1em;
+  line-height: 1;
+}
+.profile-chip .chip-remove:hover { color: var(--accent, #D4522A); }
+
+.add-person-btn {
+  background: none;
+  border: 1.5px dashed var(--accent, #D4522A);
+  color: var(--accent, #D4522A);
+  border-radius: 8px;
+  padding: 5px 14px;
+  font-size: 0.88rem;
+  cursor: pointer;
+  margin-top: 4px;
+  font-family: inherit;
+}
+.add-person-btn:hover { background: rgba(212,82,42,0.07); }
+
+#add-person-form {
+  background: #fff;
+  border: 1px solid #e8e0d8;
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 10px;
+}
+
+#person-name {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+#person-name:focus { outline: none; border-color: var(--accent, #D4522A); }
+
+#flag-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.flag-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.82rem;
+  background: #f5f0ea;
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s;
+}
+.flag-checkbox-label:hover { background: #ede5da; }
+.flag-checkbox-label input { margin: 0; cursor: pointer; }
+
+.add-person-actions {
+  display: flex;
+  gap: 8px;
+}
+
+#save-person-btn {
+  background: var(--accent, #D4522A);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 18px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+#save-person-btn:hover { background: #b8431e; }
+
+#cancel-person-btn {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.badge-household {
+  background: #e8f5e9;
+  color: #2e7d32;
+  font-size: 0.78rem;
+  padding: 2px 8px;
+  border-radius: 5px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.household-nudge-text {
+  font-size: 0.88rem;
+  color: var(--text-light, #5a4a3a);
+  margin: 14px 0 4px;
+}
+.household-nudge-text a {
+  color: var(--accent, #D4522A);
+  text-decoration: none;
+}
+.household-nudge-text a:hover { text-decoration: underline; }
+
 /* Responsive */
 @media (max-width: 375px) {
   .container { padding: 15px; margin-top: 20px; }

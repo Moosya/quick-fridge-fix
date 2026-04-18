@@ -40,6 +40,15 @@ CREATE TABLE IF NOT EXISTS saved_recipes (
   created_at INTEGER DEFAULT (unixepoch()),
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+CREATE TABLE IF NOT EXISTS household_profiles (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  dietary_flags TEXT DEFAULT '[]',
+  created_at INTEGER DEFAULT (unixepoch()),
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
 `);
 
 function getOrCreateUser(email) {
@@ -81,4 +90,19 @@ function getDb() {
   return db;
 }
 
-module.exports = { getOrCreateUser, createMagicLink, getMagicLink, markLinkUsed, saveRecipe, getSavedRecipes, getDb };
+function createHouseholdProfile(userId, name, flags) {
+  db.prepare('INSERT INTO household_profiles (user_id, name, dietary_flags) VALUES (?, ?, ?)').run(userId, name, JSON.stringify(flags || []));
+  return db.prepare('SELECT * FROM household_profiles WHERE rowid = last_insert_rowid()').get();
+}
+
+function getHouseholdProfiles(userId) {
+  return db.prepare('SELECT * FROM household_profiles WHERE user_id = ? ORDER BY created_at ASC').all(userId)
+    .map(p => ({ ...p, dietary_flags: JSON.parse(p.dietary_flags || '[]') }));
+}
+
+function deleteHouseholdProfile(id, userId) {
+  const result = db.prepare('DELETE FROM household_profiles WHERE id = ? AND user_id = ?').run(id, userId);
+  return result.changes > 0;
+}
+
+module.exports = { getOrCreateUser, createMagicLink, getMagicLink, markLinkUsed, saveRecipe, getSavedRecipes, getDb, createHouseholdProfile, getHouseholdProfiles, deleteHouseholdProfile };

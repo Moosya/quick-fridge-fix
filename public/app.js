@@ -37,10 +37,14 @@ document.addEventListener('DOMContentLoaded', () => {
     findBtn.textContent = 'Finding recipes…';
 
     try {
+      const recipeBody = { ingredients, servings };
+      const activeProfiles = householdProfiles.filter(p => activeProfileIds.has(p.id));
+      if (householdActive && activeProfiles.length > 0) recipeBody.householdProfiles = activeProfiles;
+
       const response = await fetch('/api/recipes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ingredients, servings })
+        body: JSON.stringify(recipeBody)
       });
 
       const data = await response.json();
@@ -53,7 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error('No recipes returned. Try different ingredients!');
       }
 
-      renderRecipes(data.recipes);
+      const usingHousehold = householdActive && activeProfiles.length > 0;
+      renderRecipes(data.recipes, usingHousehold);
       renderRefinePanel();
 
     } catch (err) {
@@ -80,8 +85,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentStyles = new Set();
   let currentCuisine = null;
   let currentAvoid = '';
+  let householdProfiles = [];       // loaded from API
+  let activeProfileIds = new Set(); // toggled on/off temporarily
+  let householdActive = false;      // true when user is logged in + profiles loaded
 
-  function renderRecipes(recipes) {
+  function renderRecipes(recipes, showWorksForAll = false) {
     function renderIngredient(ing) {
       if (typeof ing === 'string') return escapeHtml(ing);
       const qty = ing.quantity ? ` <span class="chip-qty">${escapeHtml(ing.quantity)}</span>` : '';
@@ -121,10 +129,14 @@ document.addEventListener('DOMContentLoaded', () => {
            </ol>`
         : '';
 
+      const worksForAllBadge = showWorksForAll
+        ? `<span class="badge badge-household">✓ Works for everyone</span>`
+        : '';
+
       card.innerHTML = `
         <h3>${escapeHtml(recipe.name)}</h3>
         ${chefNote}
-        <span class="badge">⏱ ${escapeHtml(recipe.cookTime)}</span>
+        <span class="badge">⏱ ${escapeHtml(recipe.cookTime)}</span>${worksForAllBadge}
         <span class="section-title">Ingredients you have</span>
         <div class="chips-container">${usedChips}</div>
         ${missingSection}
@@ -229,6 +241,8 @@ document.addEventListener('DOMContentLoaded', () => {
           if (currentStyles.size > 0) body.styles = Array.from(currentStyles);
           if (currentCuisine) body.cuisine = currentCuisine;
           if (currentAvoid) body.avoid = currentAvoid;
+          const activeProfiles = householdProfiles.filter(p => activeProfileIds.has(p.id));
+          if (householdActive && activeProfiles.length > 0) body.householdProfiles = activeProfiles;
 
           const response = await fetch('/api/recipes', {
             method: 'POST',
@@ -246,7 +260,8 @@ document.addEventListener('DOMContentLoaded', () => {
             throw new Error('No recipes returned. Try different ingredients!');
           }
 
-          renderRecipes(data.recipes);
+          const usingHousehold = householdActive && activeProfiles.length > 0;
+          renderRecipes(data.recipes, usingHousehold);
           renderRefinePanel();
         } catch (err) {
           showError(err.message || 'Something went wrong. Please try again.');
@@ -270,4 +285,149 @@ document.addEventListener('DOMContentLoaded', () => {
     const avoidInput = panel.querySelector('#avoid-input');
     if (avoidInput) avoidInput.value = currentAvoid || '';
   }
+
+  // ── QFF-006: Household / Who's eating ──────────────────────────────────
+
+  const VALID_FLAGS = ['vegetarian','vegan','gluten-free','dairy-free','nut-free','halal','kosher','pescatarian','low-carb','picky-eater'];
+  const FLAG_LABELS = {
+    'vegetarian': '🌿 Vegetarian', 'vegan': '🌱 Vegan', 'gluten-free': '🌾 Gluten-free',
+    'dairy-free': '🥛 Dairy-free', 'nut-free': '🥜 Nut-free', 'halal': '☪️ Halal',
+    'kosher': '✡️ Kosher', 'pescatarian': '🐟 Pescatarian', 'low-carb': '🥑 Low-carb',
+    'picky-eater': '😤 Picky eater'
+  };
+
+  const householdSection = document.getElementById('household-section');
+  const householdNudge = document.getElementById('household-nudge');
+  const profileChipsContainer = document.getElementById('profile-chips');
+  const addPersonBtn = document.getElementById('add-person-btn');
+  const addPersonForm = document.getElementById('add-person-form');
+  const personNameInput = document.getElementById('person-name');
+  const flagCheckboxesDiv = document.getElementById('flag-checkboxes');
+  const savePersonBtn = document.getElementById('save-person-btn');
+  const cancelPersonBtn = document.getElementById('cancel-person-btn');
+  const signinNudgeLink = document.getElementById('signin-nudge-link');
+
+  // Build flag checkboxes
+  VALID_FLAGS.forEach(flag => {
+    const label = document.createElement('label');
+    label.className = 'flag-checkbox-label';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.value = flag;
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode(FLAG_LABELS[flag]));
+    flagCheckboxesDiv.appendChild(label);
+  });
+
+  function renderProfileChips() {
+    profileChipsContainer.innerHTML = '';
+    householdProfiles.forEach(profile => {
+      const chip = document.createElement('span');
+      chip.className = 'profile-chip' + (activeProfileIds.has(profile.id) ? '' : ' inactive');
+      const flagStr = profile.dietary_flags && profile.dietary_flags.length > 0
+        ? profile.dietary_flags.join(', ')
+        : 'no restrictions';
+      chip.innerHTML = `<span class="chip-name">${escapeHtml(profile.name)} · ${escapeHtml(flagStr)}</span>`
+        + ` <span class="chip-remove" data-id="${profile.id}" title="Remove">×</span>`;
+
+      // Toggle active on chip body click
+      chip.addEventListener('click', (e) => {
+        if (e.target.classList.contains('chip-remove')) return;
+        if (activeProfileIds.has(profile.id)) {
+          activeProfileIds.delete(profile.id);
+        } else {
+          activeProfileIds.add(profile.id);
+        }
+        renderProfileChips();
+      });
+
+      // Remove profile on × click
+      chip.querySelector('.chip-remove').addEventListener('click', async () => {
+        await fetch(`/api/household/${profile.id}`, { method: 'DELETE' });
+        await loadHouseholdProfiles();
+      });
+
+      profileChipsContainer.appendChild(chip);
+    });
+  }
+
+  async function loadHouseholdProfiles() {
+    try {
+      const res = await fetch('/api/household');
+      if (res.status === 401) return;
+      const data = await res.json();
+      householdProfiles = data.profiles || [];
+      // Add new profiles to activeSet by default
+      householdProfiles.forEach(p => activeProfileIds.add(p.id));
+      renderProfileChips();
+    } catch (e) { /* silent */ }
+  }
+
+  addPersonBtn.addEventListener('click', () => {
+    addPersonForm.classList.toggle('hidden');
+    personNameInput.focus();
+  });
+
+  cancelPersonBtn.addEventListener('click', () => {
+    addPersonForm.classList.add('hidden');
+    personNameInput.value = '';
+    flagCheckboxesDiv.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
+  });
+
+  savePersonBtn.addEventListener('click', async () => {
+    const name = personNameInput.value.trim();
+    if (!name) { personNameInput.focus(); return; }
+    const flags = Array.from(flagCheckboxesDiv.querySelectorAll('input:checked')).map(cb => cb.value);
+    try {
+      const res = await fetch('/api/household', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, dietary_flags: flags })
+      });
+      if (res.ok) {
+        personNameInput.value = '';
+        flagCheckboxesDiv.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
+        addPersonForm.classList.add('hidden');
+        await loadHouseholdProfiles();
+      } else {
+        const err = await res.json();
+        showError(err.error || 'Failed to add person');
+      }
+    } catch (e) {
+      showError('Failed to add person');
+    }
+  });
+
+  if (signinNudgeLink) {
+    signinNudgeLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      const email = prompt('Enter your email to sign in:');
+      if (!email) return;
+      fetch('/api/auth/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      }).then(r => r.json()).then(d => {
+        if (d.sent) alert('Check your email for a magic link!');
+        else alert(d.error || 'Failed to send magic link');
+      });
+    });
+  }
+
+  // Init: check auth status and show/hide household section
+  async function initHousehold() {
+    try {
+      const res = await fetch('/api/auth/me');
+      const data = await res.json();
+      if (data.user) {
+        householdActive = true;
+        householdSection.classList.remove('hidden');
+        await loadHouseholdProfiles();
+      } else {
+        householdNudge.classList.remove('hidden');
+      }
+    } catch (e) { /* silent */ }
+  }
+
+  initHousehold();
 });
