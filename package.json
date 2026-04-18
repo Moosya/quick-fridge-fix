@@ -4,7 +4,7 @@
   "description": "Mobile-first recipe generator based on fridge ingredients",
   "main": "server/index.js",
   "engines": {
-    "node": ">=22.5.0"
+    "node": ">=23.0.0"
   },
   "scripts": {
     "start": "node --experimental-sqlite server/index.js",
