@@ -95,46 +95,4 @@ describe('POST /api/recipes', () => {
 
     expect(res.status).toBe(400);
   });
-
-  test('POST /api/recipes accepts valid styles array', async () => {
-    const res = await request(app)
-      .post('/api/recipes')
-      .send({ ingredients: 'pasta, tomato', servings: 2, styles: ['healthier', 'spicier'] });
-    expect([200, 500]).toContain(res.status);
-  });
-
-  test('POST /api/recipes rejects invalid style in styles array', async () => {
-    const res = await request(app)
-      .post('/api/recipes')
-      .send({ ingredients: 'pasta, tomato', servings: 2, styles: ['random-invalid'] });
-    expect(res.status).toBe(400);
-  });
-
-  test('POST /api/recipes rejects styles that is not an array', async () => {
-    const res = await request(app)
-      .post('/api/recipes')
-      .send({ ingredients: 'pasta, tomato', servings: 2, styles: 'healthier' });
-    expect(res.status).toBe(400);
-  });
-
-  test('POST /api/recipes accepts valid cuisine param', async () => {
-    const res = await request(app)
-      .post('/api/recipes')
-      .send({ ingredients: 'pasta, tomato', servings: 2, cuisine: 'italian' });
-    expect([200, 500]).toContain(res.status);
-  });
-
-  test('POST /api/recipes rejects invalid cuisine value', async () => {
-    const res = await request(app)
-      .post('/api/recipes')
-      .send({ ingredients: 'pasta, tomato', servings: 2, cuisine: 'klingon' });
-    expect(res.status).toBe(400);
-  });
-
-  test('POST /api/recipes rejects avoid over 200 chars', async () => {
-    const res = await request(app)
-      .post('/api/recipes')
-      .send({ ingredients: 'pasta', servings: 2, avoid: 'x'.repeat(201) });
-    expect(res.status).toBe(400);
-  });
 });

@@ -32,14 +32,27 @@ describe('buildPrompt', () => {
     expect(sysMsg.content).toContain('3 recipes');
   });
 
-  test('buildPrompt includes style directive when style is set', () => {
-    const messages = buildPrompt('chicken, rice', 2, { style: 'spicier', avoid: null });
+  test('buildPrompt includes style directive when styles array is set', () => {
+    const messages = buildPrompt('chicken, rice', 2, { styles: ['spicier'], avoid: null });
     const userMsg = messages.find(m => m.role === 'user').content;
     expect(userMsg).toMatch(/spicier and bolder/i);
   });
 
+  test('buildPrompt includes multiple styles when multiple are set', () => {
+    const messages = buildPrompt('chicken, rice', 2, { styles: ['spicier', 'healthier'] });
+    const userMsg = messages.find(m => m.role === 'user').content;
+    expect(userMsg).toMatch(/spicier and bolder/i);
+    expect(userMsg).toMatch(/lighter and healthier/i);
+  });
+
+  test('buildPrompt includes cuisine directive when cuisine is set', () => {
+    const messages = buildPrompt('chicken, rice', 2, { styles: [], cuisine: 'italian' });
+    const userMsg = messages.find(m => m.role === 'user').content;
+    expect(userMsg).toMatch(/Italian/i);
+  });
+
   test('buildPrompt includes avoid directive when avoid is set', () => {
-    const messages = buildPrompt('chicken, rice', 2, { style: null, avoid: 'cilantro, nuts' });
+    const messages = buildPrompt('chicken, rice', 2, { styles: [], avoid: 'cilantro, nuts' });
     const userMsg = messages.find(m => m.role === 'user').content;
     expect(userMsg).toMatch(/cilantro, nuts/i);
   });

@@ -2,13 +2,30 @@ const STYLE_MAP = {
   spicier: 'spicier and bolder',
   healthier: 'lighter and healthier',
   heartier: 'more filling and hearty',
-  different: 'from a completely different cuisine than the obvious choice',
+};
+
+const CUISINE_MAP = {
+  italian: 'Italian',
+  asian: 'Asian',
+  mexican: 'Mexican',
+  mediterranean: 'Mediterranean',
+  indian: 'Indian',
+  surprise: 'a surprising and unexpected',
 };
 
 function buildPrompt(ingredients, servings, options = {}) {
-  const styleText = options.style ? ` Style preference: make the recipes ${STYLE_MAP[options.style]}.` : '';
-  const avoidText = options.avoid ? ` Do not use these ingredients: ${options.avoid}.` : '';
-  
+  const { styles = [], cuisine, avoid } = options;
+
+  const styleText = styles.length > 0
+    ? ` Style preferences: make the recipes ${styles.map(s => STYLE_MAP[s]).filter(Boolean).join(' and ')}.`
+    : '';
+
+  const cuisineText = cuisine && CUISINE_MAP[cuisine]
+    ? ` Cuisine direction: lean toward ${CUISINE_MAP[cuisine]} cuisine.`
+    : '';
+
+  const avoidText = avoid ? ` Do not use these ingredients: ${avoid}.` : '';
+
   return [
     {
       role: 'system',
@@ -16,9 +33,9 @@ function buildPrompt(ingredients, servings, options = {}) {
     },
     {
       role: 'user',
-      content: `Ingredients available: "${ingredients}". Number of servings needed: ${servings}. Create 3 dinner recipes.${styleText}${avoidText}`
+      content: `Ingredients available: "${ingredients}". Number of servings needed: ${servings}. Create 3 dinner recipes.${styleText}${cuisineText}${avoidText}`
     }
   ];
 }
 
-module.exports = { buildPrompt, STYLE_MAP };
+module.exports = { buildPrompt, STYLE_MAP, CUISINE_MAP };

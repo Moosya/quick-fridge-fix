@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server/index.js",
     "dev": "nodemon server/index.js",
-    "test": "jest --testEnvironment node"
+    "test": "NODE_ENV=test jest --testEnvironment node"
   },
   "dependencies": {
     "dotenv": "^16.3.1",

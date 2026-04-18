@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 
 const limiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 10,
+  max: process.env.NODE_ENV === 'test' ? 1000 : 10,
   message: { error: 'Too many requests, please try again later.' },
 });
 
@@ -24,15 +24,10 @@ const openai = new OpenAI({
 
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
-const STYLE_MAP = {
-  spicier: 'spicier and bolder',
-  healthier: 'lighter and healthier',
-  heartier: 'more filling and hearty',
-  different: 'from a completely different cuisine than the obvious choice',
-};
+const { STYLE_MAP, CUISINE_MAP } = require('./prompt');
 
 app.post('/api/recipes', async (req, res) => {
-  const { ingredients, servings, style, avoid } = req.body;
+  const { ingredients, servings, styles, cuisine, avoid } = req.body;
 
   if (!ingredients || typeof ingredients !== 'string') {
     return res.status(400).json({ error: 'Ingredients string is required.' });
@@ -51,10 +46,22 @@ app.post('/api/recipes', async (req, res) => {
     return res.status(400).json({ error: 'Servings must be between 1 and 20.' });
   }
 
-  // Validate style parameter
+  // Validate styles array
   const validStyles = Object.keys(STYLE_MAP);
-  if (style !== undefined && style !== null && !validStyles.includes(style)) {
-    return res.status(400).json({ error: `Invalid style. Must be one of: ${validStyles.join(', ')}` });
+  if (styles !== undefined) {
+    if (!Array.isArray(styles)) {
+      return res.status(400).json({ error: 'styles must be an array.' });
+    }
+    const invalid = styles.filter(s => !validStyles.includes(s));
+    if (invalid.length > 0) {
+      return res.status(400).json({ error: `Invalid style(s): ${invalid.join(', ')}. Must be one of: ${validStyles.join(', ')}` });
+    }
+  }
+
+  // Validate cuisine parameter
+  const validCuisines = Object.keys(CUISINE_MAP);
+  if (cuisine !== undefined && cuisine !== null && !validCuisines.includes(cuisine)) {
+    return res.status(400).json({ error: `Invalid cuisine. Must be one of: ${validCuisines.join(', ')}` });
   }
 
   // Validate avoid parameter length
@@ -63,7 +70,7 @@ app.post('/api/recipes', async (req, res) => {
   }
 
   try {
-    const messages = buildPrompt(ingredients, servingsNum, { style, avoid });
+    const messages = buildPrompt(ingredients, servingsNum, { styles: styles || [], cuisine, avoid });
 
     const completion = await openai.chat.completions.create({
       model: MODEL,

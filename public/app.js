@@ -75,7 +75,8 @@ document.addEventListener('DOMContentLoaded', () => {
     return div.innerHTML;
   }
 
-  let currentStyle = null;
+  let currentStyles = new Set();
+  let currentCuisine = null;
   let currentAvoid = '';
 
   function renderRecipes(recipes) {
@@ -118,89 +119,136 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderRefinePanel() {
-    if (document.getElementById('refine-panel')) return;
+    // If panel already exists, just re-attach it (survives resultsContainer wipes)
+    let panel = document.getElementById('refine-panel');
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.id = 'refine-panel';
+      panel.className = 'refine-panel';
+      panel.innerHTML = `
+        <span class="section-title">Refine results</span>
+        <div style="margin-bottom: 12px;">
+          <span class="section-title" style="margin-top:0;">Style (pick any):</span>
+          <button class="style-btn" data-style="spicier">🌶️ Spicier</button>
+          <button class="style-btn" data-style="healthier">🥗 Healthier</button>
+          <button class="style-btn" data-style="heartier">🍝 Heartier</button>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <span class="section-title" style="margin-top:0;">Cuisine:</span>
+          <button class="cuisine-btn" data-cuisine="italian">🇮🇹 Italian</button>
+          <button class="cuisine-btn" data-cuisine="asian">🥢 Asian</button>
+          <button class="cuisine-btn" data-cuisine="mexican">🌮 Mexican</button>
+          <button class="cuisine-btn" data-cuisine="mediterranean">🫒 Mediterranean</button>
+          <button class="cuisine-btn" data-cuisine="indian">🫙 Indian</button>
+          <button class="cuisine-btn" data-cuisine="surprise">🎲 Surprise me</button>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <span class="section-title" style="margin-top:0;">Avoid:</span>
+          <input type="text" id="avoid-input" class="avoid-input" placeholder="e.g. cilantro, nuts, dairy" maxlength="200">
+        </div>
+        <button id="regenerate-btn" class="regenerate-btn">🔄 Regenerate</button>
+      `;
 
-    const panel = document.createElement('div');
-    panel.id = 'refine-panel';
-    panel.className = 'refine-panel';
-    panel.innerHTML = `
-      <span class="section-title">Refine results</span>
-      <div style="margin-bottom: 12px;">
-        <span class="section-title" style="margin-top:0;">Style:</span>
-        <button class="style-btn" data-style="spicier">🌶️ Spicier</button>
-        <button class="style-btn" data-style="healthier">🥗 Healthier</button>
-        <button class="style-btn" data-style="heartier">🍝 Heartier</button>
-        <button class="style-btn" data-style="different">🌍 Different cuisine</button>
-      </div>
-      <div style="margin-bottom: 12px;">
-        <span class="section-title" style="margin-top:0;">Avoid:</span>
-        <input type="text" id="avoid-input" class="avoid-input" placeholder="e.g. cilantro, nuts, dairy">
-      </div>
-      <button id="regenerate-btn" class="regenerate-btn">🔄 Regenerate</button>
-    `;
+      // Style buttons — multi-select toggle
+      const styleBtns = panel.querySelectorAll('.style-btn');
+      styleBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const style = btn.dataset.style;
+          if (currentStyles.has(style)) {
+            currentStyles.delete(style);
+            btn.classList.remove('active');
+          } else {
+            currentStyles.add(style);
+            btn.classList.add('active');
+          }
+        });
+      });
+
+      // Cuisine buttons — single-select toggle
+      const cuisineBtns = panel.querySelectorAll('.cuisine-btn');
+      cuisineBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (currentCuisine === btn.dataset.cuisine) {
+            currentCuisine = null;
+            btn.classList.remove('active');
+          } else {
+            cuisineBtns.forEach(b => b.classList.remove('active'));
+            currentCuisine = btn.dataset.cuisine;
+            btn.classList.add('active');
+          }
+        });
+      });
+
+      // Avoid input handler
+      const avoidInput = panel.querySelector('#avoid-input');
+      avoidInput.addEventListener('input', (e) => {
+        currentAvoid = e.target.value;
+      });
+
+      // Regenerate button handler
+      panel.querySelector('#regenerate-btn').addEventListener('click', async () => {
+        const ingredients = ingredientsInput.value.trim();
+        const servings = parseInt(servingsInput.value, 10);
+
+        errorMsgDiv.classList.add('hidden');
+        findBtn.disabled = true;
+
+        if (!ingredients) {
+          showError('Please enter some ingredients to get started!');
+          findBtn.disabled = false;
+          return;
+        }
+
+        // Remove recipe cards but keep panel detached so it survives
+        const existingPanel = document.getElementById('refine-panel');
+        if (existingPanel) existingPanel.remove();
+        resultsContainer.innerHTML = '';
+        skeletonContainer.classList.remove('hidden');
+
+        try {
+          const body = { ingredients, servings };
+          if (currentStyles.size > 0) body.styles = Array.from(currentStyles);
+          if (currentCuisine) body.cuisine = currentCuisine;
+          if (currentAvoid) body.avoid = currentAvoid;
+
+          const response = await fetch('/api/recipes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Request failed');
+          }
+
+          if (!data.recipes || data.recipes.length === 0) {
+            throw new Error('No recipes returned. Try different ingredients!');
+          }
+
+          renderRecipes(data.recipes);
+          renderRefinePanel();
+        } catch (err) {
+          showError(err.message || 'Something went wrong. Please try again.');
+          renderRefinePanel();
+        } finally {
+          skeletonContainer.classList.add('hidden');
+          findBtn.disabled = false;
+        }
+      });
+    }
 
     resultsContainer.appendChild(panel);
 
-    // Style button handlers
-    const styleBtns = panel.querySelectorAll('.style-btn');
-    styleBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        styleBtns.forEach(b => b.classList.remove('active'));
-        if (currentStyle === btn.dataset.style) {
-          currentStyle = null;
-        } else {
-          currentStyle = btn.dataset.style;
-          btn.classList.add('active');
-        }
-      });
+    // Restore active state on style buttons after re-attach
+    panel.querySelectorAll('.style-btn').forEach(btn => {
+      btn.classList.toggle('active', currentStyles.has(btn.dataset.style));
     });
-
-    // Avoid input handler
+    panel.querySelectorAll('.cuisine-btn').forEach(btn => {
+      btn.classList.toggle('active', currentCuisine === btn.dataset.cuisine);
+    });
     const avoidInput = panel.querySelector('#avoid-input');
-    avoidInput.addEventListener('input', (e) => {
-      currentAvoid = e.target.value;
-    });
-
-    // Regenerate button handler
-    document.getElementById('regenerate-btn').addEventListener('click', async () => {
-      const ingredients = ingredientsInput.value.trim();
-      const servings = parseInt(servingsInput.value, 10);
-
-      errorMsgDiv.classList.add('hidden');
-      resultsContainer.innerHTML = '';
-      findBtn.disabled = true;
-
-      if (!ingredients) {
-        showError('Please enter some ingredients to get started!');
-        return;
-      }
-
-      skeletonContainer.classList.remove('hidden');
-
-      try {
-        const response = await fetch('/api/recipes', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ingredients, servings, style: currentStyle || undefined, avoid: currentAvoid || undefined })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Request failed');
-        }
-
-        if (!data.recipes || data.recipes.length === 0) {
-          throw new Error('No recipes returned. Try different ingredients!');
-        }
-
-        renderRecipes(data.recipes);
-      } catch (err) {
-        showError(err.message || 'Something went wrong. Please try again.');
-      } finally {
-        skeletonContainer.classList.add('hidden');
-        findBtn.disabled = false;
-      }
-    });
+    if (avoidInput) avoidInput.value = currentAvoid || '';
   }
 });
