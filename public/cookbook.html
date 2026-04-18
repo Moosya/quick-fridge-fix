@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Cookbook — Quick Fridge Fix</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .cookbook-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .cookbook-header h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--primary); margin: 0; }
+    .back-link { color: var(--olive); font-size: 0.9rem; text-decoration: none; font-weight: 500; }
+    .back-link:hover { color: var(--primary); }
+    .saved-card { cursor: pointer; }
+    .saved-card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+    .saved-card .card-meta { color: var(--text-light); font-size: 0.85rem; margin: 6px 0 0; }
+    .saved-card .steps-block { display: none; margin-top: 14px; border-top: 1px solid var(--border-color); padding-top: 14px; }
+    .saved-card.open .steps-block { display: block; }
+    .chevron { transition: transform 0.2s; color: var(--text-light); flex-shrink: 0; margin-left: 8px; }
+    .saved-card.open .chevron { transform: rotate(180deg); }
+    .empty-state { text-align: center; padding: 48px 20px; color: var(--text-light); }
+    .empty-state a { color: var(--primary); text-decoration: none; font-weight: 600; }
+    .signin-prompt { text-align: center; padding: 48px 20px; }
+    .signin-prompt p { color: var(--text-light); margin-bottom: 16px; }
+    .email-form { display: flex; gap: 8px; max-width: 360px; margin: 0 auto; }
+    .email-form input { flex: 1; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 0.95rem; }
+    .email-form input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(212,82,42,0.15); }
+    .email-form button { padding: 10px 18px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .email-form button:hover { background: var(--primary-hover); }
+    .sent-msg { color: var(--olive); font-size: 0.95rem; margin-top: 12px; }
+    .user-bar { text-align: right; margin-bottom: 8px; color: var(--text-light); font-size: 0.85rem; }
+    .user-bar a { color: var(--primary); text-decoration: none; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="cookbook-header">
+      <h2>📖 Your Cookbook</h2>
+      <a href="/" class="back-link">← Back to fridge</a>
+    </div>
+    <div id="user-bar" class="user-bar hidden"></div>
+    <div id="content"></div>
+  </main>
+
+  <script>
+    const PRIMARY = '#D4522A';
+
+    async function init() {
+      const res = await fetch('/api/auth/me');
+      const { user } = await res.json();
+
+      if (!user) {
+        showSignIn();
+        return;
+      }
+
+      document.getElementById('user-bar').textContent = user.email + ' · ';
+      const logoutLink = document.createElement('a');
+      logoutLink.textContent = 'Sign out';
+      logoutLink.onclick = async () => {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        location.reload();
+      };
+      document.getElementById('user-bar').appendChild(logoutLink);
+      document.getElementById('user-bar').classList.remove('hidden');
+
+      loadRecipes();
+    }
+
+    async function loadRecipes() {
+      const res = await fetch('/api/recipes/saved');
+      const { recipes } = await res.json();
+
+      if (!recipes.length) {
+        document.getElementById('content').innerHTML = `
+          <div class="empty-state">
+            <p>No saved recipes yet.</p>
+            <p><a href="/">Head to the fridge</a> and save something good.</p>
+          </div>`;
+        return;
+      }
+
+      document.getElementById('content').innerHTML = recipes.map((r, i) => `
+        <article class="card saved-card" id="card-${i}" onclick="toggleCard(${i})">
+          <div class="saved-card-header">
+            <h3>${esc(r.name)}</h3>
+            <svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          ${r.cook_time || r.servings ? `<p class="card-meta">${r.cook_time ? '⏱ ' + esc(r.cook_time) : ''}${r.cook_time && r.servings ? ' · ' : ''}${r.servings ? '🍽 ' + r.servings + ' servings' : ''}</p>` : ''}
+          <div class="steps-block">
+            <ol class="steps-list">
+              ${(r.steps || []).map(s => `<li>${esc(s)}</li>`).join('')}
+            </ol>
+          </div>
+        </article>`).join('');
+    }
+
+    function toggleCard(i) {
+      document.getElementById('card-' + i).classList.toggle('open');
+    }
+
+    function showSignIn() {
+      document.getElementById('content').innerHTML = `
+        <div class="signin-prompt">
+          <p>Enter your email to sign in and see your saved recipes.</p>
+          <div class="email-form">
+            <input type="email" id="email-input" placeholder="you@example.com" />
+            <button onclick="requestLink()">Send link</button>
+          </div>
+          <p id="sent-msg" class="sent-msg hidden"></p>
+        </div>`;
+    }
+
+    async function requestLink() {
+      const email = document.getElementById('email-input').value.trim();
+      if (!email) return;
+      const res = await fetch('/api/auth/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      const msg = document.getElementById('sent-msg');
+      if (data.sent) {
+        msg.textContent = '✓ Check your email for a sign-in link.';
+        msg.classList.remove('hidden');
+      } else {
+        msg.textContent = data.error || 'Something went wrong.';
+        msg.classList.remove('hidden');
+      }
+    }
+
+    function esc(text) {
+      if (!text) return '';
+      const d = document.createElement('div');
+      d.textContent = text;
+      return d.innerHTML;
+    }
+
+    init();
+  </script>
+</body>
+</html>

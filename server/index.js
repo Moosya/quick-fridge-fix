@@ -1,8 +1,12 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const OpenAI = require('openai');
-require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
+const path = require('path');
+const session = require('express-session');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const { buildPrompt } = require('./prompt');
+const authRouter = require('./auth');
+const { saveRecipe, getSavedRecipes } = require('./db');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -15,7 +19,47 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'qff-dev-secret-change-in-prod',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 7 * 24 * 60 * 60 * 1000
+  }
+}));
 app.use(express.json());
+app.use(authRouter);
+
+app.post('/api/recipes/save', (req, res) => {
+  if (!req.session.userId) return res.status(401).json({ error: 'Authentication required' });
+  const { name, cook_time, servings, ingredients_used, ingredients_missing, steps } = req.body;
+  if (!name) return res.status(400).json({ error: 'Recipe name required' });
+  const saved = saveRecipe(req.session.userId, {
+    name, cook_time, servings,
+    ingredients_used: JSON.stringify(ingredients_used || []),
+    ingredients_missing: JSON.stringify(ingredients_missing || []),
+    steps: JSON.stringify(steps || [])
+  });
+  res.json({ saved: true, id: saved.id });
+});
+
+app.get('/api/recipes/saved', (req, res) => {
+  if (!req.session.userId) return res.status(401).json({ error: 'Authentication required' });
+  const recipes = getSavedRecipes(req.session.userId).map(r => ({
+    ...r,
+    ingredients_used: JSON.parse(r.ingredients_used || '[]'),
+    ingredients_missing: JSON.parse(r.ingredients_missing || '[]'),
+    steps: JSON.parse(r.steps || '[]')
+  }));
+  res.json({ recipes });
+});
+
+app.get('/cookbook', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/cookbook.html'));
+});
+
 app.use(express.static('public'));
 
 const openai = new OpenAI({
