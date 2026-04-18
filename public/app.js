@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
       panel.id = 'refine-panel';
       panel.className = 'refine-panel';
       panel.innerHTML = `
-        <span class="section-title">Refine results</span>
+        <span class="section-title">Tweak it</span>
         <div style="margin-bottom: 12px;">
           <span class="section-title" style="margin-top:0;">Style (pick any):</span>
           <button class="style-btn" data-style="spicier">🌶️ Spicier</button>
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <span class="section-title" style="margin-top:0;">Avoid:</span>
           <input type="text" id="avoid-input" class="avoid-input" placeholder="e.g. cilantro, nuts, dairy" maxlength="200">
         </div>
-        <button id="regenerate-btn" class="regenerate-btn">🔄 Regenerate</button>
+        <button id="regenerate-btn" class="regenerate-btn">↻ Try again</button>
       `;
 
       // Style buttons — multi-select toggle

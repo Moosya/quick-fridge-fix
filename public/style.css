@@ -1,17 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap');
+
 /* Reset & Base */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg-color: #FFF9F0;
-  --primary-green: #2D6A4F;
-  --accent-orange: #E76F51;
+  --bg-color: #FAF7F2;
+  --primary: #D4522A;
+  --primary-hover: #B8411E;
+  --olive: #4A5240;
   --card-bg: #FFFFFF;
-  --text-dark: #333333;
+  --text-dark: #1A1208;
   --text-light: #666666;
   --border-color: #ddd;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   background-color: var(--bg-color);
   color: var(--text-dark);
   line-height: 1.6;
@@ -30,7 +33,7 @@ body {
 .visually-hidden { position: absolute; overflow: hidden; clip: rect(0, 0, 0, 0); height: 1px; width: 1px; }
 
 /* Header */
-.header { text-align: center; margin-bottom: 30px; color: var(--primary-green); }
+.header { text-align: center; margin-bottom: 30px; color: var(--primary); }
 .header h1 { font-size: 2rem; margin-bottom: 5px; }
 .header p { color: var(--text-light); font-size: 1.1rem; }
 
@@ -47,14 +50,14 @@ textarea {
   font-family: inherit;
   font-size: 1rem;
 }
-textarea:focus { outline: none; border-color: var(--primary-green); box-shadow: 0 0 0 2px rgba(45,106,79,0.15); }
+textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(212,82,42,0.15); }
 
 .servings-control { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
 .servings-label { font-weight: bold; color: var(--text-dark); }
 
 .stepper { display: flex; align-items: center; gap: 10px; background: #f4f4f4; padding: 5px 15px; border-radius: 20px; }
 .stepper button {
-  background: var(--primary-green);
+  background: var(--primary);
   color: white;
   border: none;
   width: 30px; height: 30px;
@@ -64,7 +67,7 @@ textarea:focus { outline: none; border-color: var(--primary-green); box-shadow: 
   display: flex; align-items: center; justify-content: center;
   transition: background-color 0.2s;
 }
-.stepper button:hover { background-color: #1b4332; }
+.stepper button:hover { background-color: var(--primary-hover); }
 .stepper input {
   text-align: center;
   width: 40px;
@@ -80,7 +83,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
 #find-btn {
   width: 100%;
   padding: 15px;
-  background-color: var(--primary-green);
+  background-color: var(--primary);
   color: white;
   border: none;
   border-radius: 8px;
@@ -89,13 +92,13 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
   cursor: pointer;
   transition: background-color 0.2s;
 }
-#find-btn:hover { background-color: #1b4332; }
+#find-btn:hover { background-color: #B8411E; }
 #find-btn:active { transform: scale(0.99); }
 
 /* Status Messages */
 .hidden { display: none !important; }
 .error-message {
-  color: var(--accent-orange);
+  color: var(--primary);
   text-align: center;
   font-weight: bold;
   margin-top: 15px;
@@ -141,14 +144,20 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
 }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-.card h3 { color: var(--primary-green); font-size: 1.25rem; margin-bottom: 8px; }
+.card h3 { 
+  color: var(--text-dark); 
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1.3rem; 
+  margin-bottom: 8px; 
+}
 
 /* Refine Panel */
 .refine-panel {
   background: var(--card-bg);
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.06);
   margin-top: 30px;
   border-top: 2px solid var(--border-color);
 }
@@ -172,9 +181,9 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
 }
 
 .style-btn.active {
-  background-color: var(--primary-green);
+  background-color: var(--primary);
   color: white;
-  border-color: var(--primary-green);
+  border-color: var(--primary);
 }
 
 .style-btn:hover:not(.active) {
@@ -193,14 +202,14 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
 
 .avoid-input:focus {
   outline: none;
-  border-color: var(--primary-green);
-  box-shadow: 0 0 0 2px rgba(45,106,79,0.15);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(212,82,42,0.15);
 }
 
 .regenerate-btn {
   width: 100%;
   padding: 12px;
-  background-color: var(--primary-green);
+  background-color: var(--primary);
   color: white;
   border: none;
   border-radius: 8px;
@@ -211,7 +220,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
 }
 
 .regenerate-btn:hover {
-  background-color: #1b4332;
+  background-color: #B8411E;
 }
 
 .regenerate-btn:active {
@@ -225,8 +234,8 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
 
 .badge {
   display: inline-block;
-  background-color: #e8f5e9;
-  color: var(--primary-green);
+  background-color: #f0ece3;
+  color: var(--olive);
   padding: 4px 12px;
   border-radius: 16px;
   font-size: 0.82rem;
@@ -236,11 +245,12 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
 
 .section-title {
   display: block;
+  font-family: 'Inter', sans-serif;
   font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--text-light);
+  font-size: 0.7rem;
+  color: var(--olive);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   margin-top: 14px;
   margin-bottom: 8px;
 }
@@ -251,7 +261,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
   border-radius: 6px;
   font-size: 0.88rem;
 }
-.chip-have { background-color: #e8f5e9; color: #1b4332; }
+.chip-have { background-color: #fdf0ec; color: var(--primary); }
 .chip-missing { background-color: #fff3e0; color: #b5451b; border: 1px solid #ffe0b2; }
 
 ol.steps-list {
@@ -263,64 +273,7 @@ ol.steps-list {
 ol.steps-list li { margin-bottom: 8px; line-height: 1.55; }
 
 /* Refine Panel */
-.refine-panel {
-  background: var(--card-bg);
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-  margin-top: 20px;
-  border-top: 3px solid var(--primary-green);
-}
-
-.style-btn {
-  display: inline-block;
-  padding: 8px 12px;
-  background-color: #f4f4f4;
-  color: var(--text-dark);
-  border: none;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  margin-right: 8px;
-  transition: all 0.2s;
-}
-
-.style-btn.active {
-  background-color: var(--primary-green);
-  color: white;
-}
-
-.avoid-input {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-family: inherit;
-}
-
-.avoid-input:focus {
-  outline: none;
-  border-color: var(--primary-green);
-  box-shadow: 0 0 0 2px rgba(45,106,79,0.15);
-}
-
-.regenerate-btn {
-  width: 100%;
-  padding: 12px;
-  background-color: var(--accent-orange);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.regenerate-btn:hover {
-  background-color: #c53a2d;
-}
+/* Duplicate refine-panel styles to be removed - keep first definition only */
 
 .regenerate-btn:disabled {
   opacity: 0.6;

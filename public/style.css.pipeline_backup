@@ -143,6 +143,86 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
 
 .card h3 { color: var(--primary-green); font-size: 1.25rem; margin-bottom: 8px; }
 
+/* Refine Panel */
+.refine-panel {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  margin-top: 30px;
+  border-top: 2px solid var(--border-color);
+}
+
+.style-toggles {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.style-btn {
+  background: #f4f4f4;
+  color: var(--text-dark);
+  border: 1px solid var(--border-color);
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.style-btn.active {
+  background-color: var(--primary-green);
+  color: white;
+  border-color: var(--primary-green);
+}
+
+.style-btn:hover:not(.active) {
+  background-color: #e8f5e9;
+}
+
+.avoid-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  margin-bottom: 16px;
+  font-family: inherit;
+}
+
+.avoid-input:focus {
+  outline: none;
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 2px rgba(45,106,79,0.15);
+}
+
+.regenerate-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--primary-green);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.regenerate-btn:hover {
+  background-color: #1b4332;
+}
+
+.regenerate-btn:active {
+  transform: scale(0.99);
+}
+
+.regenerate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .badge {
   display: inline-block;
   background-color: #e8f5e9;
