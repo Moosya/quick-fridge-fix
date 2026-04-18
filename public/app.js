@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     skeletonContainer.classList.remove('hidden');
     findBtn.disabled = true;
+    findBtn.textContent = 'Finding recipes…';
 
     try {
       const response = await fetch('/api/recipes', {
@@ -60,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } finally {
       skeletonContainer.classList.add('hidden');
       findBtn.disabled = false;
+      findBtn.textContent = 'Find Recipes';
     }
   });
 

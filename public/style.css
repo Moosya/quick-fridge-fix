@@ -169,7 +169,8 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
   margin-bottom: 16px;
 }
 
-.style-btn {
+.style-btn,
+.cuisine-btn {
   background: #f4f4f4;
   color: var(--text-dark);
   border: 1px solid var(--border-color);
@@ -178,16 +179,19 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-family: inherit;
 }
 
-.style-btn.active {
+.style-btn.active,
+.cuisine-btn.active {
   background-color: var(--primary);
   color: white;
   border-color: var(--primary);
 }
 
-.style-btn:hover:not(.active) {
-  background-color: #e8f5e9;
+.style-btn:hover:not(.active),
+.cuisine-btn:hover:not(.active) {
+  background-color: #f5e6e0;
 }
 
 .avoid-input {
