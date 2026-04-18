@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       renderRecipes(data.recipes);
+      renderRefinePanel();
 
     } catch (err) {
       showError(err.message || 'Something went wrong. Please try again.');
