@@ -82,31 +82,48 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentAvoid = '';
 
   function renderRecipes(recipes) {
+    function renderIngredient(ing) {
+      if (typeof ing === 'string') return escapeHtml(ing);
+      const qty = ing.quantity ? ` <span class="chip-qty">${escapeHtml(ing.quantity)}</span>` : '';
+      return escapeHtml(ing.item) + qty;
+    }
+    function renderStep(step) {
+      if (typeof step === 'string') return `<li>${escapeHtml(step)}</li>`;
+      let badges = '';
+      if (step.temp) badges += ` <span class="step-badge step-badge-temp">🌡 ${escapeHtml(step.temp)}</span>`;
+      if (step.duration) badges += ` <span class="step-badge step-badge-time">⏱ ${escapeHtml(step.duration)}</span>`;
+      return `<li>${escapeHtml(step.instruction)}${badges}</li>`;
+    }
     recipes.forEach((recipe, index) => {
       const card = document.createElement('article');
       card.className = 'card';
       card.style.animationDelay = `${index * 0.08}s`;
 
       const usedChips = (recipe.ingredients_used || [])
-        .map(item => `<span class="chip chip-have">${escapeHtml(item)}</span>`)
+        .map(item => `<span class="chip chip-have">${renderIngredient(item)}</span>`)
         .join('');
+
+      const chefNote = recipe.chefNote
+        ? `<p class="chef-note">${escapeHtml(recipe.chefNote)}</p>`
+        : '';
 
       const missingSection = recipe.ingredients_missing && recipe.ingredients_missing.length > 0
         ? `<span class="section-title">Shopping list</span>
            <div class="chips-container">
-             ${recipe.ingredients_missing.map(item => `<span class="chip chip-missing">${escapeHtml(item)}</span>`).join('')}
+             ${recipe.ingredients_missing.map(item => `<span class="chip chip-missing">${renderIngredient(item)}</span>`).join('')}
            </div>`
         : '';
 
       const stepsHtml = recipe.steps && recipe.steps.length > 0
         ? `<span class="section-title">How to make it</span>
            <ol class="steps-list">
-             ${recipe.steps.map(step => `<li>${escapeHtml(step)}</li>`).join('')}
+             ${recipe.steps.map(step => renderStep(step)).join('')}
            </ol>`
         : '';
 
       card.innerHTML = `
         <h3>${escapeHtml(recipe.name)}</h3>
+        ${chefNote}
         <span class="badge">⏱ ${escapeHtml(recipe.cookTime)}</span>
         <span class="section-title">Ingredients you have</span>
         <div class="chips-container">${usedChips}</div>

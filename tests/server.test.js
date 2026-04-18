@@ -9,25 +9,37 @@ jest.mock('openai', () => {
               name: 'Test Recipe 1',
               cookTime: '30 minutes',
               servings: 2,
-              ingredients_used: ['chicken'],
-              ingredients_missing: ['rice'],
-              steps: ['Step 1', 'Step 2']
+              chefNote: 'A test chef note.',
+              ingredients_used: [{ item: 'chicken', quantity: '500g' }],
+              ingredients_missing: [{ item: 'rice', quantity: '200g' }],
+              steps: [
+                { instruction: 'Step 1', temp: null, duration: null },
+                { instruction: 'Step 2', temp: 'medium (160°C / 320°F)', duration: '5 min' }
+              ]
             },
             {
               name: 'Test Recipe 2',
               cookTime: '20 minutes',
               servings: 2,
-              ingredients_used: ['chicken'],
+              chefNote: 'Another test note.',
+              ingredients_used: [{ item: 'chicken', quantity: '400g' }],
               ingredients_missing: [],
-              steps: ['Step 1']
+              steps: [
+                { instruction: 'Step 1', temp: null, duration: null }
+              ]
             },
             {
               name: 'Test Recipe 3',
               cookTime: '45 minutes',
               servings: 2,
-              ingredients_used: ['chicken'],
-              ingredients_missing: ['garlic'],
-              steps: ['Step 1', 'Step 2', 'Step 3']
+              chefNote: 'Third test note.',
+              ingredients_used: [{ item: 'chicken', quantity: '600g' }],
+              ingredients_missing: [{ item: 'garlic', quantity: '3 cloves' }],
+              steps: [
+                { instruction: 'Step 1', temp: null, duration: null },
+                { instruction: 'Step 2', temp: null, duration: '10 min' },
+                { instruction: 'Step 3', temp: 'high (220°C / 425°F)', duration: null }
+              ]
             }
           ]
         })

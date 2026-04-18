@@ -260,6 +260,40 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-app
 }
 
 .chips-container { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.chef-note {
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--text-light);
+  margin: 6px 0 12px;
+  line-height: 1.5;
+}
+
+.chip-qty {
+  font-size: 0.8em;
+  opacity: 0.75;
+  margin-left: 2px;
+}
+
+.step-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: 4px;
+  vertical-align: middle;
+  font-style: normal;
+}
+
+.step-badge-temp {
+  background: #fff3e0;
+  color: #b45309;
+}
+
+.step-badge-time {
+  background: #f0f4ff;
+  color: #3b52a5;
+}
 .chip {
   padding: 4px 10px;
   border-radius: 6px;

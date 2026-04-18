@@ -29,6 +29,10 @@ describe('buildPrompt', () => {
     expect(sysMsg.content).toContain('JSON');
     expect(sysMsg.content).toContain('recipes');
     expect(sysMsg.content).toContain('ingredients_used');
+    expect(sysMsg.content).toContain('chefNote');
+    expect(sysMsg.content).toContain('quantity');
+    expect(sysMsg.content).toContain('temp');
+    expect(sysMsg.content).toContain('duration');
     expect(sysMsg.content).toContain('3 recipes');
   });
 
