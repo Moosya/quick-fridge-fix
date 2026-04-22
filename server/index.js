@@ -172,6 +172,13 @@ app.post('/api/recipes', async (req, res) => {
   }
 });
 
+app.get('/api/version', (req, res) => {
+  const sha = process.env.RAILWAY_GIT_COMMIT_SHA;
+  const short = sha ? sha.slice(0, 7) : null;
+  const version = process.env.npm_package_version || null;
+  res.json({ build: short || version || 'dev' });
+});
+
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Something went wrong!' });

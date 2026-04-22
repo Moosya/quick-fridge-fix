@@ -430,4 +430,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   initHousehold();
+
+  // QFF-008: Build version footer
+  fetch('/api/version')
+    .then(r => r.json())
+    .then(d => {
+      const el = document.getElementById('build-version');
+      if (el) el.textContent = 'build: ' + d.build;
+    })
+    .catch(() => {});
 });
